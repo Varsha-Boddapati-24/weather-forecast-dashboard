@@ -3,27 +3,36 @@ const defaultCity = "Hyderabad";
 window.onload = () => {
 
   if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-          (position) => {
-              const { latitude, longitude } = position.coords;
-              getWeatherByCoords(latitude, longitude);
-          },
-          (error) => {
-              console.log("Location access denied or not available:", error);
-              // If location is denied or unavailable, show default city
-              getWeather(defaultCity);
-          }
-      );
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        getWeatherByCoords(latitude, longitude);
+      },
+      (error) => {
+        console.log("Location access denied or not available:", error);
+        // If location is denied or unavailable, show default city
+        getWeather(defaultCity);
+      }
+    );
   } else {
-      console.log("Geolocation not supported by this browser.");
-      getWeather(defaultCity);
+    console.log("Geolocation not supported by this browser.");
+    getWeather(defaultCity);
   }
 };
 
 
 document.getElementById('searchBtn').addEventListener('click', () => {
   const city = searchInput.value.trim();
-  if (city !== '') {
+  const searchContainer = document.getElementById('search-container');
+
+  if (city === '') {
+    errorMsg.classList.remove('hidden');
+    searchContainer.classList.add('border', 'border-red-500');
+   
+  } else {
+    errorMsg.classList.add('hidden');
+    searchContainer.classList.remove('border', 'border-red-500');
+   
     getWeather(city);
   }
 });
@@ -42,14 +51,49 @@ document.getElementById('locationBtn').addEventListener('click', () => {
 });
 
 
-async function getWeather(city) {
-  const apiKey = '0b3af9d4eb462d4d1fbc0b1a75e429cd';
+const searchBtn = document.getElementById('searchBtn');
+const searchInput = document.getElementById('searchInput');
+const errorMsg = document.getElementById('errorMsg');
+const searchContainer = document.getElementById('search-container');
 
+searchBtn.addEventListener('click', () => {
+  const city = searchInput.value.trim();
+
+  if (city === '') {
+    showError("Please enter a city name.");
+    return;
+  }
+
+  getWeather(city);
+});
+
+function showError(message) {
+  errorMsg.textContent = message;
+  errorMsg.classList.remove('hidden');
+  searchContainer.classList.add('border', 'border-red-500');
+}
+
+function hideError() {
+  errorMsg.classList.add('hidden');
+  searchContainer.classList.remove('border', 'border-red-500');
+}
+
+// Updated getWeather function with proper validation
+async function getWeather(city) {
   try {
+    hideError(); // Hide any previous errors
+
+    const apiKey = '0b3af9d4eb462d4d1fbc0b1a75e429cd';
+
     // Fetch current weather data
     const weatherRes = await fetch(
       `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
     );
+
+    if (!weatherRes.ok) {
+      throw new Error("City not found.");
+    }
+
     const weatherData = await weatherRes.json();
     updateWeatherUI(weatherData);
     updateDateTime(weatherData);
@@ -58,15 +102,21 @@ async function getWeather(city) {
     const forecastRes = await fetch(
       `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
     );
+
+    if (!forecastRes.ok) {
+      throw new Error("Failed to fetch forecast.");
+    }
+
     const forecastData = await forecastRes.json();
     updateRecentCities(city);
     displayExtendedForecast(forecastData);
 
   } catch (error) {
-    console.error("Error fetching weather data:", error);
-    alert("Failed to fetch weather data. Please check the city name or your internet connection.");
+    console.error(error);
+    showError("Invalid city name. Please try again.");
   }
 }
+
 async function getWeatherByCoords(lat, lon) {
   const apiKey = '0b3af9d4eb462d4d1fbc0b1a75e429cd';
 
@@ -81,7 +131,7 @@ async function getWeatherByCoords(lat, lon) {
     const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`);
     const forecastData = await forecastRes.json();
     displayExtendedForecast(forecastData);
-    
+
   } catch (error) {
     console.error("Error fetching weather by location:", error);
     alert("Failed to fetch weather data from location.");
@@ -136,16 +186,16 @@ function displayExtendedForecast(data) {
   const forecastContainer = document.getElementById("forecast");
   forecastContainer.innerHTML = "";
 
-   // Get today's date to compare and exclude today's forecast
-   const today = new Date();
-   const todayDate = today.toISOString().split("T")[0]; 
+  // Get today's date to compare and exclude today's forecast
+  const today = new Date();
+  const todayDate = today.toISOString().split("T")[0];
 
   const dailyData = {};
   data.list.forEach(entry => {
     const date = entry.dt_txt.split(" ")[0];
     const time = entry.dt_txt.split(" ")[1];
 
-    if ( !dailyData[date]&& date !== todayDate) {
+    if (!dailyData[date] && date !== todayDate) {
       dailyData[date] = entry;
     }
   });
@@ -159,7 +209,7 @@ function displayExtendedForecast(data) {
 
     const icon = day.weather[0].icon;
     const temp = day.main.temp;
-    console.log("temp",temp)
+    console.log("temp", temp)
     const wind = day.wind.speed;
     const humidity = day.main.humidity;
     const desc = day.weather[0].description;
@@ -194,7 +244,7 @@ function updateBackground(condition) {
   } else if (lowerCond.includes("mist") || lowerCond.includes("haze") || lowerCond.includes("fog")) {
     bgImage = "mist.jpg";
   }
-  
+
 
   body.style.backgroundImage = `url('./assets/${bgImage}')`;
   body.style.backgroundSize = "cover";
@@ -202,4 +252,90 @@ function updateBackground(condition) {
   body.style.backgroundRepeat = "no-repeat";
 }
 
-  
+// Handle dropdown toggle when clicking the button
+document.getElementById('dropdownButton').addEventListener('click', (event) => {
+  event.stopPropagation();  // Prevent event from bubbling up
+
+  const dropdownMenu = document.getElementById('dropdownMenu');
+  console.log('Button clicked. Toggling dropdown visibility...');
+
+  // Ensure dropdown is rendered every time the button is clicked, even if cities are already there
+  renderDropdown();  // Update the dropdown items every time the button is clicked
+
+  // Toggle visibility of the dropdown menu
+  dropdownMenu.classList.toggle('hidden');  // This will add or remove the 'hidden' class
+
+  // Log the updated state after toggle
+  console.log('Dropdown visibility now:', dropdownMenu.classList.contains('hidden') ? 'Hidden' : 'Visible');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (event) => {
+  const dropdownMenu = document.getElementById('dropdownMenu');
+  const dropdownButton = document.getElementById('dropdownButton');
+
+  console.log('Document clicked. Checking if outside dropdown...');
+
+  if (!dropdownMenu.contains(event.target) && !dropdownButton.contains(event.target)) {
+    console.log('Clicked outside. Hiding dropdown...');
+    dropdownMenu.classList.add('hidden');  // Close dropdown if clicked outside
+  }
+});
+
+// Render the dropdown items based on recent cities stored in localStorage
+function renderDropdown() {
+  const dropdownMenu = document.getElementById('dropdownMenu');
+  const recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
+
+  console.log('Rendering dropdown with recent cities:', recentCities);
+
+  // Clear existing dropdown items
+  dropdownMenu.innerHTML = '';
+
+  // If there are no recent cities, don't show dropdown
+  if (recentCities.length === 0) {
+    console.log('No recent cities found. Hiding dropdown...');
+    dropdownMenu.classList.add('hidden'); // Hide dropdown if there are no cities
+    return;
+  }
+
+  // Create a list item for each recent city
+  recentCities.forEach(city => {
+    const listItem = document.createElement('li');
+    listItem.classList.add('px-4', 'py-2', 'hover:bg-black/40', 'cursor-pointer');
+    listItem.textContent = city;
+
+    // When a city is selected, get the weather and hide the dropdown
+    listItem.addEventListener('click', () => {
+      console.log('City selected:', city);
+      getWeather(city);
+      dropdownMenu.classList.add('hidden');  // Hide dropdown when city is selected
+    });
+
+    dropdownMenu.appendChild(listItem);
+  });
+}
+function updateRecentCities(city) {
+  console.log('Updating recent cities with:', city);
+
+  let recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
+  console.log('Current cities in localStorage:', recentCities);
+
+  city = city.trim();  // Remove any extra spaces
+
+  // Check if the city already exists in the recent cities list
+  if (!recentCities.some(c => c.toLowerCase() === city.toLowerCase())) {
+    recentCities.unshift(city);  // Add the city to the beginning of the list
+
+    // Limit the list to 5 cities
+    if (recentCities.length > 5) {
+      recentCities.pop();  // Remove the last city if there are more than 5
+    }
+
+    localStorage.setItem('recentCities', JSON.stringify(recentCities));  // Store updated list in localStorage
+    console.log('Cities after update:', recentCities);
+
+    // Re-render the dropdown
+    renderDropdown();
+  }
+}
