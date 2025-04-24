@@ -1,14 +1,21 @@
 const defaultCity = "Hyderabad";
+const geolocationTimeout = 10000;
 
 window.onload = () => {
 
   if (navigator.geolocation) {
+    const timeoutId = setTimeout(() => {
+      console.log("User didn't respond to geolocation request, using default city.");
+      getWeather(defaultCity);
+    }, geolocationTimeout);
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        clearTimeout(timeoutId);
         const { latitude, longitude } = position.coords;
         getWeatherByCoords(latitude, longitude);
       },
       (error) => {
+        clearTimeout(timeoutId);
         console.log("Location access denied or not available:", error);
         // If location is denied or unavailable, show default city
         getWeather(defaultCity);
@@ -28,11 +35,11 @@ document.getElementById('searchBtn').addEventListener('click', () => {
   if (city === '') {
     errorMsg.classList.remove('hidden');
     searchContainer.classList.add('border', 'border-red-500');
-   
+
   } else {
     errorMsg.classList.add('hidden');
     searchContainer.classList.remove('border', 'border-red-500');
-   
+
     getWeather(city);
   }
 });
@@ -215,7 +222,7 @@ function displayExtendedForecast(data) {
     const desc = day.weather[0].description;
 
     forecastContainer.innerHTML += `
-      <div class="bg-white/20 backdrop-blur-lg p-4 rounded-2xl shadow-md text-white text-center">
+      <div class="bg-white/20 backdrop-blur-lg p-4 rounded-2xl shadow-md text-white text-center transition-transform duration-300 transform hover:scale-105 hover:bg-black/30">
         <h3 class="font-semibold">${formattedDate}</h3>
         <img src="https://openweathermap.org/img/wn/${icon}@2x.png" class="mx-auto w-12 h-12" alt="${desc}" />
         <p class="text-lg">${temp.toFixed(1)}°C</p>
@@ -294,8 +301,9 @@ function renderDropdown() {
 
   // If there are no recent cities, don't show dropdown
   if (recentCities.length === 0) {
+    dropdownMenu.innerHTML = '<li class="px-4 py-2 text-sm text-gray-300">No recent searches yet</li>';
     console.log('No recent cities found. Hiding dropdown...');
-    dropdownMenu.classList.add('hidden'); // Hide dropdown if there are no cities
+    // dropdownMenu.classList.add('hidden');
     return;
   }
 

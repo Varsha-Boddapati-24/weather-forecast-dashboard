@@ -5,18 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather Forecast</title>
-    <link href="./output.css" rel="stylesheet">
-    <script src="script.js" defer></script>
-</head>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Forecast</title>
+    <link rel="icon" href="./assets/favicon.png" type="image/png">
     <link rel="stylesheet" href="output.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="script.js" defer></script>
 
 </head>
 
@@ -34,16 +26,18 @@
                 <div class="flex flex-col sm:flex:col w-full  md:w-1/2">
                     <div class="flex items-center gap-2 w-full">
                         <div id="search-container"
-                            class="w-full md:w-1/2 flex items-center gap-2 bg-white/10 rounded-lg px-4 py-2">
+                            class="w-full md:w-1/2 flex items-center gap-2 bg-white/10 rounded-lg px-4 py-2 transition-all duration-300 ease-in-out hover:bg-white/20">
                             <input type="text" id="searchInput" placeholder="Search city..."
-                                class="bg-transparent text-white  outline-none w-full" />
-                            <button id="searchBtn">
-                                <i class="fas fa-search"></i>
+                                class="bg-transparent text-white  outline-none w-full " />
+                            <button id="searchBtn"
+                                class="transition-transform duration-300 transform hover:scale-105 hover:bg-black/20 px-3 py-1   text-white  rounded-lg">
+                                <i class="fas fa-search "></i>
                             </button>
 
                         </div>
 
-                        <button id="locationBtn" class="ml-2 px-4 py-2  bg-white/10 hover:bg-black rounded-lg">
+                        <button id="locationBtn" title="Get weather using your location"
+                            class="ml-2 px-4 py-2  bg-white/10 rounded-lg  transition-transform duration-300 transform hover:scale-105 hover:bg-black/30">
                             <i class="fa-solid fa-location-crosshairs text-white"></i>
                         </button>
 
@@ -53,19 +47,20 @@
 
                 <!-- Dropdown for recently searched cities -->
                 <div class="relative">
-                    <button id="dropdownButton" class="px-4 py-2 bg-white/10 rounded-lg text-white focus:outline-none">
+                    <button id="dropdownButton"
+                        class="px-4 py-2 bg-white/10 rounded-lg text-white flex items-center justify-between sm:justify-center focus:outline-none transition-all duration-300 ease-in-out hover:bg-white/20">
                         Recent Searches
                         <i class="fa-solid fa-caret-down ml-2"></i>
                     </button>
                     <ul id="dropdownMenu"
-                        class="absolute hidden bg-black/40 rounded-lg w-full max-h-60 overflow-y-auto mt-2 text-white shadow-lg">
+                        class="absolute hidden  bg-black sm:bg-black/40 rounded-lg w-full max-h-60 overflow-y-auto mt-2 text-white shadow-lg">
                         <!-- Dropdown items will be dynamically added here -->
                     </ul>
                 </div>
 
                 <!-- City Name and date -->
                 <div class="flex flex-col">
-                    <h2 id="cityName" class="text-2xl font-semibold">Hyderabad, India</h2>
+                    <h2 id="cityName" class="text-2xl font-semibold"></h2>
                     <div class="text-sm text-gray-300 mt-1">
                         <span id="day"></span>,
                         <span id="currentDate"></span>,
@@ -76,8 +71,9 @@
             </div>
 
             <!-- Today’s Weather -->
-            <div class="bg-white/10 rounded-lg p-4 shadow-md">
-                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div
+                class="bg-white/10 rounded-lg p-4 shadow-md transition-transform duration-300 transform hover:scale-103 hover:bg-black/30">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 ">
                     <!-- Temperature and Condition -->
                     <div class="flex flex-col items-center sm:items-start">
                         <div class="flex items-center gap-2">
@@ -105,7 +101,7 @@
             </div>
 
 
-            <div id="forecast" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-6">
+            <div id="forecast" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-6 ">
                 <!-- Cards inserted here -->
             </div>
 
@@ -115,7 +111,5 @@
 
 
 </body>
-
-</html>
 
 </html>
