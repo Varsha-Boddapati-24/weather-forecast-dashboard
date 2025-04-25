@@ -23,45 +23,17 @@ window.onload = () => {
     );
   } else {
     console.log("Geolocation not supported by this browser.");
-    getWeather(defaultCity);
+   
   }
+  getWeather(defaultCity);
 };
-
-
-document.getElementById('searchBtn').addEventListener('click', () => {
-  const city = searchInput.value.trim();
-  const searchContainer = document.getElementById('search-container');
-
-  if (city === '') {
-    errorMsg.classList.remove('hidden');
-    searchContainer.classList.add('border', 'border-red-500');
-
-  } else {
-    errorMsg.classList.add('hidden');
-    searchContainer.classList.remove('border', 'border-red-500');
-
-    getWeather(city);
-  }
-});
-document.getElementById('locationBtn').addEventListener('click', () => {
-  if ('geolocation' in navigator) {
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      const { latitude, longitude } = position.coords;
-      await getWeatherByCoords(latitude, longitude);
-    }, (error) => {
-      console.error("Geolocation error:", error);
-      alert("Could not get your location. Please allow location access.");
-    });
-  } else {
-    alert("Geolocation is not supported by your browser.");
-  }
-});
 
 
 const searchBtn = document.getElementById('searchBtn');
 const searchInput = document.getElementById('searchInput');
 const errorMsg = document.getElementById('errorMsg');
 const searchContainer = document.getElementById('search-container');
+const locationBtn = document.getElementById('locationBtn');
 
 searchBtn.addEventListener('click', () => {
   const city = searchInput.value.trim();
@@ -70,19 +42,78 @@ searchBtn.addEventListener('click', () => {
     showError("Please enter a city name.");
     return;
   }
+  else if (!isValidCity(city)) {
+    showError("City name must contain only letters and spaces.");
+    return;
+  } else {
+    getWeather(city);
+  }
+});
+searchInput.addEventListener("keydown", (e) => {
+  console.log("event",e)
+  if (e.key === "Enter") {
+    getWeather(searchInput.value.trim())
+  }
+});
+locationBtn.addEventListener('click', () => {
+  hideError(); // Clear any old messages
+  searchInput.value = "";
 
-  getWeather(city);
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        await getWeatherByCoords(latitude, longitude);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+
+        let message = "Could not get your location.";
+        if (error.code === error.PERMISSION_DENIED) {
+          message = "Location access was denied. Please allow it to use this feature.";
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          message = "Location unavailable. Try again later.";
+        } else if (error.code === error.TIMEOUT) {
+          message = "Location request timed out.";
+        }
+
+        showError(message, true); // Show right-aligned error for geolocation
+      }
+    );
+  } else {
+    showError("Geolocation is not supported by your browser.", true);
+  }
 });
 
-function showError(message) {
+function showError(message, isGeoLocationError = false) {
   errorMsg.textContent = message;
   errorMsg.classList.remove('hidden');
-  searchContainer.classList.add('border', 'border-red-500');
-}
 
+  // Align error message left/right based on the source
+  // errorMsg.classList.toggle('text-left', !isGeoLocationError);
+  // errorMsg.classList.toggle('text-right', isGeoLocationError);
+
+  if (isGeoLocationError) {
+    searchContainer.classList.remove('border', 'border-red-500');
+    locationBtn.classList.add('border', 'border-red-500');
+  } else {
+    locationBtn.classList.remove('border', 'border-red-500');
+    searchContainer.classList.add('border', 'border-red-500');
+  }
+}
 function hideError() {
   errorMsg.classList.add('hidden');
+  errorMsg.classList.remove('text-left', 'text-right');
+
   searchContainer.classList.remove('border', 'border-red-500');
+  locationBtn.classList.remove('border', 'border-red-500');
+}
+
+
+function isValidCity(input) {
+  const trimmed = input.trim();
+  const cityRegex = /^[a-zA-Z\s]+$/; // only letters and spaces
+  return trimmed.length > 0 && cityRegex.test(trimmed);
 }
 
 // Updated getWeather function with proper validation
@@ -98,7 +129,11 @@ async function getWeather(city) {
     );
 
     if (!weatherRes.ok) {
-      throw new Error("City not found.");
+      if (weatherRes.status === 404) {
+        throw new Error("invalid city. Please try again.");
+      } else {
+        throw new Error("Failed to fetch weather data.");
+      }
     }
 
     const weatherData = await weatherRes.json();
@@ -120,30 +155,53 @@ async function getWeather(city) {
 
   } catch (error) {
     console.error(error);
-    showError("Invalid city name. Please try again.");
+    if (!navigator.onLine) {
+      showError("You're offline. Please check your internet connection.");
+    } else {
+      showError(error.message || "Something went wrong. Try again.");
+    }
+    // showError("Invalid city name. Please try again.");
   }
 }
 
 async function getWeatherByCoords(lat, lon) {
-  const apiKey = '0b3af9d4eb462d4d1fbc0b1a75e429cd';
-
   try {
+    hideError(); 
+
+    const apiKey = '0b3af9d4eb462d4d1fbc0b1a75e429cd';
+
     // Fetch current weather
     const weatherRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`);
+
+    if (!weatherRes.ok) {
+      throw new Error("Failed to fetch weather from your location.");
+    }
+
     const weatherData = await weatherRes.json();
     updateWeatherUI(weatherData);
     updateDateTime(weatherData);
 
     // Fetch forecast
     const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`);
+
+    if (!forecastRes.ok) {
+      throw new Error("Failed to fetch forecast data.");
+    }
+
     const forecastData = await forecastRes.json();
     displayExtendedForecast(forecastData);
 
   } catch (error) {
     console.error("Error fetching weather by location:", error);
-    alert("Failed to fetch weather data from location.");
+
+    if (!navigator.onLine) {
+      showError("You're offline. Please check your internet connection.", true);
+    } else {
+      showError(error.message || "Failed to get weather from location.", true);
+    }
   }
 }
+
 
 
 
