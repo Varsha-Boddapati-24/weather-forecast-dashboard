@@ -101,7 +101,7 @@ A responsive weather forecast web application that displays real-time weather co
    - Based on the weather conditions (Clear, Rainy, Snowy, etc.), the background of the app will change to match the current weather, providing a visually dynamic experience.
   
 ##  Live Demo
-Check out my weather dashboard live here: **[weather dashboard]()**
+Check out my weather dashboard live here: **[weather dashboard](https://varsha-boddapati-24.github.io/weather-forecast-dashboard/)**
 
 ##  Contact Me
  **Email:** varshaboddapati24@gmail.com     
