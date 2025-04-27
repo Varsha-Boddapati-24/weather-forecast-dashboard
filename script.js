@@ -1,34 +1,25 @@
 const defaultCity = "Hyderabad";
-const geolocationTimeout = 10000;
 
 // Function to execute when the page loads it shows default location
 // Tries to get the user's location. If permission is denied, defaults to a pre-defined city (Hyderabad).
 window.onload = () => {
 
-  getWeather(defaultCity);
+  getWeather(defaultCity,true);
   if (navigator.geolocation) {
-    // Timeout to trigger a fallback to the default city if the user doesn't respond to the geolocation request within the specified time
-    const timeoutId = setTimeout(() => {
-      console.log("User didn't respond to geolocation request, using default city.");
-      getWeather(defaultCity);
-    }, geolocationTimeout);
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        // Clears the timeout if the user's geolocation is successfully obtained before the timeout expires.
-        clearTimeout(timeoutId);
         const { latitude, longitude } = position.coords;
         getWeatherByCoords(latitude, longitude);
       },
       (error) => {
-        clearTimeout(timeoutId);
         console.log("Location access denied or not available:", error);
         // If location is denied or unavailable, show default city
-        getWeather(defaultCity);
+        getWeather(defaultCity,true);
       }
     );
   } else {
     console.log("Geolocation not supported by this browser.");
-    getWeather(defaultCity);
+    getWeather(defaultCity,true);
    }
  
 };
@@ -134,7 +125,7 @@ function isValidCity(input) {
 
 // Fetches current weather and 5-day forecast for a given city, updates the UI, and handles errors like invalid city or offline status.
 
-async function getWeather(city) {
+async function getWeather(city,isDefault=false) {
   try {
     hideError(); // Hide any previous errors
 
@@ -167,7 +158,13 @@ async function getWeather(city) {
     }
 
     const forecastData = await forecastRes.json();
-    updateRecentCities(city);
+    if(isDefault){
+      renderDropdown();
+    }
+    else{
+      updateRecentCities(city);
+    }
+
     displayExtendedForecast(forecastData);
 
   } catch (error) {
@@ -273,8 +270,6 @@ function displayExtendedForecast(data) {
   const dailyData = {};
   data.list.forEach(entry => {
     const date = entry.dt_txt.split(" ")[0];
-    const time = entry.dt_txt.split(" ")[1];
-
     if (!dailyData[date] && date !== todayDate) {
       dailyData[date] = entry;
     }
