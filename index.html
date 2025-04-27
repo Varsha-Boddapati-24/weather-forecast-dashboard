@@ -13,49 +13,52 @@
 </head>
 
 <body class="min-h-screen w-full">
+
+    <!--  Header Section with semi-transparent background, blur effect, and shadow-->
     <header class="bg-black/30  backdrop-blur-md shadow-md py-4 px-6 text-white text-center">
         <h1 class="text-3xl font-bold">Weather Forecast</h1>
     </header>
+    <!-- Main Weather Section with transparent blurred background, rounded border and shadow -->
     <section id="weather-section"
         class="bg-black/30 backdrop-blur-md shadow-md border rounded-xl p-6 max-w-5xl mx-auto my-10 text-white">
         <div class="flex flex-col gap-8">
 
-            <!-- Search bar and city name -->
+            <!-- Top Section: Search Bar, Location Button, Dropdown, City Name and Date -->
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                <!-- Search Bar -->
+                <!-- Search Bar and Location Button Group -->
                 <div class="flex flex-col sm:flex:col w-full  md:w-1/2">
                     <div class="flex items-center gap-2 w-full">
+                        <!-- Search Input with hover background change and smooth transition -->
                         <div id="search-container"
                             class="w-full md:w-1/2 flex items-center gap-2 bg-white/10 rounded-lg px-4 py-2 transition-all duration-300 ease-in-out hover:bg-white/20">
                             <input type="text" id="searchInput" placeholder="Search city..."
                                 class="bg-transparent text-white  outline-none w-full " />
+                            <!-- Search Button with hover scale animation -->
                             <button id="searchBtn"
                                 class="transition-transform duration-300 transform hover:scale-105 hover:bg-black/20 px-3 py-1   text-white  rounded-lg">
                                 <i class="fas fa-search "></i>
                             </button>
 
                         </div>
-                       
-                            <button id="locationBtn" title="Get weather using your location"
-                                class="ml-2 px-4 py-2  bg-white/10 rounded-lg  transition-transform duration-300 transform hover:scale-105 hover:bg-black/30">
-                                <i class="fa-solid fa-location-crosshairs text-white"></i>
-                            </button>
-                            <!-- <p id="geoErrorMsg" class="text-yellow-500 text-sm mt-2 ">Unable to fetch weather data</p>
-                        </div> -->
-
-
+                        <!-- Location Button with hover scale and background effect -->
+                        <button id="locationBtn" title="Get weather using your location"
+                            class="ml-2 px-4 py-2  bg-white/10 rounded-lg  transition-transform duration-300 transform hover:scale-105 hover:bg-black/30">
+                            <i class="fa-solid fa-location-crosshairs text-white"></i>
+                        </button>
 
                     </div>
+                    <!-- Error Message hidden initially, styled in red -->
                     <p id="errorMsg" class="text-red-500 text-sm mt-2 hidden">Please enter a city name.</p>
                 </div>
 
-                <!-- Dropdown for recently searched cities -->
+                <!-- Dropdown Button for Recent Searches with hover effect -->
                 <div class="relative">
                     <button id="dropdownButton"
                         class="px-4 py-2 bg-white/10 rounded-lg text-white flex items-center justify-between sm:justify-center focus:outline-none transition-all duration-300 ease-in-out hover:bg-white/20">
                         Recent Searches
                         <i class="fa-solid fa-caret-down ml-2"></i>
                     </button>
+                    <!-- Dropdown Menu for displaying recent cities dynamically -->
                     <ul id="dropdownMenu"
                         class="absolute hidden  bg-black sm:bg-black/40 rounded-lg w-full max-h-60 overflow-y-auto mt-2 text-white shadow-lg">
                         <!-- Dropdown items will be dynamically added here -->
@@ -64,7 +67,7 @@
 
                 <!-- City Name and date -->
                 <div class="flex flex-col">
-                    <h2 id="cityName" class="text-2xl font-semibold"></h2>
+                    <h2 id="cityName" class="text-2xl font-semibold text-center sm:text-left"></h2>
                     <div class="text-sm text-gray-300 mt-1">
                         <span id="day"></span>,
                         <span id="currentDate"></span>,
@@ -74,7 +77,7 @@
 
             </div>
 
-            <!-- Today’s Weather -->
+            <!-- Today's Weather Section with hover transition and transparent background -->
             <div
                 class="bg-white/10 rounded-lg p-4 shadow-md transition-transform duration-300 transform hover:scale-103 hover:bg-black/30">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4 ">
@@ -104,7 +107,7 @@
                 </div>
             </div>
 
-
+            <!-- 5-Day Weather Forecast Cards Section -->
             <div id="forecast" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-6 ">
                 <!-- Cards inserted here -->
             </div>

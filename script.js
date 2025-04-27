@@ -1,15 +1,20 @@
 const defaultCity = "Hyderabad";
 const geolocationTimeout = 10000;
 
+// Function to execute when the page loads it shows default location
+// Tries to get the user's location. If permission is denied, defaults to a pre-defined city (Hyderabad).
 window.onload = () => {
 
+  getWeather(defaultCity);
   if (navigator.geolocation) {
+    // Timeout to trigger a fallback to the default city if the user doesn't respond to the geolocation request within the specified time
     const timeoutId = setTimeout(() => {
       console.log("User didn't respond to geolocation request, using default city.");
       getWeather(defaultCity);
     }, geolocationTimeout);
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        // Clears the timeout if the user's geolocation is successfully obtained before the timeout expires.
         clearTimeout(timeoutId);
         const { latitude, longitude } = position.coords;
         getWeatherByCoords(latitude, longitude);
@@ -23,9 +28,9 @@ window.onload = () => {
     );
   } else {
     console.log("Geolocation not supported by this browser.");
-   
-  }
-  getWeather(defaultCity);
+    getWeather(defaultCity);
+   }
+ 
 };
 
 
@@ -34,7 +39,10 @@ const searchInput = document.getElementById('searchInput');
 const errorMsg = document.getElementById('errorMsg');
 const searchContainer = document.getElementById('search-container');
 const locationBtn = document.getElementById('locationBtn');
+const dropdownMenu = document.getElementById('dropdownMenu');
+const dropdownButton = document.getElementById('dropdownButton');
 
+// Listens for a click on the search button, validates the city input, and either shows an error or fetches weather data for the entered city.
 searchBtn.addEventListener('click', () => {
   const city = searchInput.value.trim();
 
@@ -49,12 +57,20 @@ searchBtn.addEventListener('click', () => {
     getWeather(city);
   }
 });
+// Listens for the "Enter" key press in the search input, validates the city input, and either shows an error or fetches weather data for the entered city.
 searchInput.addEventListener("keydown", (e) => {
-  console.log("event",e)
   if (e.key === "Enter") {
-    getWeather(searchInput.value.trim())
+    const city = searchInput.value.trim();
+    if (city === '') {
+      showError("Please enter a city name.");
+    } else if (!isValidCity(city)) {
+      showError("City name must contain only letters and spaces.");
+    } else {
+      getWeather(city);
+    }
   }
 });
+// Listens for a click event on the location button, attempts to fetch the user's geolocation, and either fetches weather data based on the location or shows an error if geolocation fails.
 locationBtn.addEventListener('click', () => {
   hideError(); // Clear any old messages
   searchInput.value = "";
@@ -77,7 +93,7 @@ locationBtn.addEventListener('click', () => {
           message = "Location request timed out.";
         }
 
-        showError(message, true); // Show right-aligned error for geolocation
+        showError(message, true);
       }
     );
   } else {
@@ -85,13 +101,10 @@ locationBtn.addEventListener('click', () => {
   }
 });
 
+// Displays an error message and applies different styles to indicate whether the error is related to geolocation or search input.
 function showError(message, isGeoLocationError = false) {
   errorMsg.textContent = message;
   errorMsg.classList.remove('hidden');
-
-  // Align error message left/right based on the source
-  // errorMsg.classList.toggle('text-left', !isGeoLocationError);
-  // errorMsg.classList.toggle('text-right', isGeoLocationError);
 
   if (isGeoLocationError) {
     searchContainer.classList.remove('border', 'border-red-500');
@@ -101,6 +114,8 @@ function showError(message, isGeoLocationError = false) {
     searchContainer.classList.add('border', 'border-red-500');
   }
 }
+
+// Hides the error message and resets the styles on the search container and location button.
 function hideError() {
   errorMsg.classList.add('hidden');
   errorMsg.classList.remove('text-left', 'text-right');
@@ -109,14 +124,16 @@ function hideError() {
   locationBtn.classList.remove('border', 'border-red-500');
 }
 
+// Validates if the input city name contains only letters and spaces.
 
 function isValidCity(input) {
   const trimmed = input.trim();
-  const cityRegex = /^[a-zA-Z\s]+$/; // only letters and spaces
+  const cityRegex = /^[a-zA-Z\s]+$/; 
   return trimmed.length > 0 && cityRegex.test(trimmed);
 }
 
-// Updated getWeather function with proper validation
+// Fetches current weather and 5-day forecast for a given city, updates the UI, and handles errors like invalid city or offline status.
+
 async function getWeather(city) {
   try {
     hideError(); // Hide any previous errors
@@ -160,10 +177,9 @@ async function getWeather(city) {
     } else {
       showError(error.message || "Something went wrong. Try again.");
     }
-    // showError("Invalid city name. Please try again.");
   }
 }
-
+// Fetches current weather and 5-day forecast based on latitude and longitude, updates the UI, and handles errors such as offline status or failed API calls.
 async function getWeatherByCoords(lat, lon) {
   try {
     hideError(); 
@@ -202,12 +218,9 @@ async function getWeatherByCoords(lat, lon) {
   }
 }
 
-
-
-
+// Updates the weather UI with city name, temperature, condition, humidity, wind speed, and weather icon based on the API response data.
 
 function updateWeatherUI(data) {
-  console.log(`${data.name}, ${data.sys.country}`)
   const celsiusTemp = data.main.temp;
   const condition = data.weather[0].main;
   document.getElementById('cityName').textContent = `${data.name}, ${data.sys.country}`;
@@ -222,15 +235,14 @@ function updateWeatherUI(data) {
   document.getElementById('weatherIcon').src = iconUrl;
   updateBackground(condition);
 }
+// Converts the Unix timestamp to a human-readable date and time format and updates the DOM with the current day, date, and time.
 function updateDateTime(data) {
   const now = new Date(data.dt * 1000); // Convert Unix timestamp to milliseconds
-  console.log("now", now)
-
+ 
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   const day = days[now.getDay()];
-  console.log("day", day)
   const date = now.getDate();
   const month = months[now.getMonth()];
   const year = now.getFullYear();
@@ -247,6 +259,9 @@ function updateDateTime(data) {
   document.getElementById('currentDate').textContent = `${month} ${date}, ${year}`;
   document.getElementById('currentTime').textContent = `Time: ${time}`;
 }
+
+// Displays the extended weather forecast (next 5 days) , showing date, temperature, wind speed, and humidity.
+
 function displayExtendedForecast(data) {
   const forecastContainer = document.getElementById("forecast");
   forecastContainer.innerHTML = "";
@@ -274,7 +289,6 @@ function displayExtendedForecast(data) {
 
     const icon = day.weather[0].icon;
     const temp = day.main.temp;
-    console.log("temp", temp)
     const wind = day.wind.speed;
     const humidity = day.main.humidity;
     const desc = day.weather[0].description;
@@ -290,6 +304,8 @@ function displayExtendedForecast(data) {
     `;
   });
 }
+
+// Updates the background image of the page based on the current weather condition (clear, cloudy, rain, etc.).
 function updateBackground(condition) {
   const body = document.body;
   let bgImage = "default.jpg"; // fallback
@@ -318,50 +334,56 @@ function updateBackground(condition) {
 }
 
 // Handle dropdown toggle when clicking the button
-document.getElementById('dropdownButton').addEventListener('click', (event) => {
+dropdownButton.addEventListener('click', (event) => {
   event.stopPropagation();  // Prevent event from bubbling up
 
   const dropdownMenu = document.getElementById('dropdownMenu');
-  console.log('Button clicked. Toggling dropdown visibility...');
-
-  // Ensure dropdown is rendered every time the button is clicked, even if cities are already there
-  renderDropdown();  // Update the dropdown items every time the button is clicked
+  // Ensure dropdown is rendered every time the button is clicked
+  renderDropdown(); 
 
   // Toggle visibility of the dropdown menu
-  dropdownMenu.classList.toggle('hidden');  // This will add or remove the 'hidden' class
+  dropdownMenu.classList.toggle('hidden');
 
-  // Log the updated state after toggle
-  console.log('Dropdown visibility now:', dropdownMenu.classList.contains('hidden') ? 'Hidden' : 'Visible');
 });
 
 // Close dropdown when clicking outside
 document.addEventListener('click', (event) => {
-  const dropdownMenu = document.getElementById('dropdownMenu');
-  const dropdownButton = document.getElementById('dropdownButton');
-
-  console.log('Document clicked. Checking if outside dropdown...');
-
-  if (!dropdownMenu.contains(event.target) && !dropdownButton.contains(event.target)) {
-    console.log('Clicked outside. Hiding dropdown...');
+ 
+if (!dropdownMenu.contains(event.target) && !dropdownButton.contains(event.target)) {
     dropdownMenu.classList.add('hidden');  // Close dropdown if clicked outside
   }
 });
 
+// This function updates the list of recent cities searched by the user
+function updateRecentCities(city) {
+  let recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
+  city = city.trim();
+
+  // Check if the city already exists in the recent cities list
+  if (!recentCities.some(c => c.toLowerCase() === city.toLowerCase())) {
+    recentCities.unshift(city); 
+
+    // Limit the list to 5 cities
+    if (recentCities.length > 5) {
+      recentCities.pop();  
+    }
+
+    localStorage.setItem('recentCities', JSON.stringify(recentCities));  // Store updated list in localStorage
+    // Re-render the dropdown
+    renderDropdown();
+  }
+}
 // Render the dropdown items based on recent cities stored in localStorage
 function renderDropdown() {
   const dropdownMenu = document.getElementById('dropdownMenu');
   const recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
 
-  console.log('Rendering dropdown with recent cities:', recentCities);
-
   // Clear existing dropdown items
   dropdownMenu.innerHTML = '';
 
-  // If there are no recent cities, don't show dropdown
+  // If there are no recent cities,show No recent searches yet
   if (recentCities.length === 0) {
     dropdownMenu.innerHTML = '<li class="px-4 py-2 text-sm text-gray-300">No recent searches yet</li>';
-    console.log('No recent cities found. Hiding dropdown...');
-    // dropdownMenu.classList.add('hidden');
     return;
   }
 
@@ -373,35 +395,11 @@ function renderDropdown() {
 
     // When a city is selected, get the weather and hide the dropdown
     listItem.addEventListener('click', () => {
-      console.log('City selected:', city);
       getWeather(city);
-      dropdownMenu.classList.add('hidden');  // Hide dropdown when city is selected
+      dropdownMenu.classList.add('hidden'); 
     });
 
     dropdownMenu.appendChild(listItem);
   });
 }
-function updateRecentCities(city) {
-  console.log('Updating recent cities with:', city);
 
-  let recentCities = JSON.parse(localStorage.getItem('recentCities')) || [];
-  console.log('Current cities in localStorage:', recentCities);
-
-  city = city.trim();  // Remove any extra spaces
-
-  // Check if the city already exists in the recent cities list
-  if (!recentCities.some(c => c.toLowerCase() === city.toLowerCase())) {
-    recentCities.unshift(city);  // Add the city to the beginning of the list
-
-    // Limit the list to 5 cities
-    if (recentCities.length > 5) {
-      recentCities.pop();  // Remove the last city if there are more than 5
-    }
-
-    localStorage.setItem('recentCities', JSON.stringify(recentCities));  // Store updated list in localStorage
-    console.log('Cities after update:', recentCities);
-
-    // Re-render the dropdown
-    renderDropdown();
-  }
-}
