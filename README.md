@@ -32,24 +32,26 @@ A responsive weather forecast web application that displays real-time weather co
     ```bash
     git clone https://github.com/your-username/weather-forecast-app.git
     cd weather-forecast-app
- 2. **Obtain an API Key**
+ 2. **Navigate to the project directory**
+       ```bash
+       cd Weather-forecast-dashboard
 
-    - Go to [OpenWeatherMap](https://openweathermap.org/).
-    - Create a free account and generate an API key.
-
- 3. **Update API Key in Code**
-
-       In your JavaScript file (e.g., `script.js`), replace:
- 
-        const apiKey = "YOUR_API_KEY_HERE"
+ 3. **Install dependency for tailwindcss**
+     ```bash
+      npm i
         
-  4. **Open index.html in your browser.**      
+  5. **Run the following command**
+      ```bash
+     npx tailwindcss -i ./input.css -o ./output.css --watch
+  6. **Open the index.html file in your preferred web browser.**
+
+     ---    
 
 ## folder structure
 
 ```
 ├── index.html
-├── style.css (or Tailwind build output)
+├── input.css 
 ├── script.js
 ├── assets/
     ├── clear.jpg
