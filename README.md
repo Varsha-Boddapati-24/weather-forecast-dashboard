@@ -42,6 +42,8 @@ A responsive weather forecast web application that displays real-time weather co
        In your JavaScript file (e.g., `script.js`), replace:
  
         const apiKey = "YOUR_API_KEY_HERE"
+        
+  4. **Open index.html in your browser.**      
 
 ## folder structure
 
